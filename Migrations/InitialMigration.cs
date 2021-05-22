@@ -39,14 +39,14 @@ namespace Organizations.Migrations
                 .WithColumn("OrganizationLogoGuid").AsGuid().Nullable().ForeignKey("OrganizationLogo", "Guid")
                 ;
 
-            Create.Table("JOrganizationImage")
-                .WithColumn("OrganizationGuid").AsGuid().PrimaryKey().ForeignKey("Organization", "Guid")
-                .WithColumn("OrganizationImageGuid").AsGuid().Unique().ForeignKey("OrganizationImage", "Guid")
-                ;
-            
             Create.Table("OrganizationImage")
                 .WithColumn("Guid").AsGuid().PrimaryKey()
                 .WithColumn("Content").AsBinary().NotNullable()
+                ;
+
+            Create.Table("JOrganizationImage")
+                .WithColumn("OrganizationGuid").AsGuid().PrimaryKey().ForeignKey("Organization", "Guid")
+                .WithColumn("OrganizationImageGuid").AsGuid().Unique().ForeignKey("OrganizationImage", "Guid")
                 ;
         }
 

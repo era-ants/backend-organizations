@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Organizations.DataTransfer;
@@ -27,12 +28,18 @@ namespace Organizations.Controllers
         }
 
 
+        [HttpGet]
         public Task<IEnumerable<OrganizationFullDto>> GetOrganizations() => _organizationsService.GetAllAsync();
 
+        [HttpGet("{guid:guid}")]
         public Task<OrganizationFullDto> GetOrganization(Guid guid) => _organizationsService.GetByGuidAsync(guid);
 
-        public Task<Guid> Register(RegisterOrganizationDto registerOrganizationDto) =>
-            _organizationsService.RegisterOrganizationAsync(
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Guid>> Register(RegisterOrganizationDto registerOrganizationDto)
+        {
+            return Ok(await _organizationsService.RegisterOrganizationAsync(
                 Organization.New(CreateOrganization.New(
                     OrganizationType.GetById(registerOrganizationDto.OrganizationTypeId),
                     new CreateOrUpdateContacts(
@@ -48,7 +55,12 @@ namespace Organizations.Controllers
                     registerOrganizationDto.LegalAddress,
                     registerOrganizationDto.ActualName,
                     registerOrganizationDto.TIN,
-                    registerOrganizationDto.Logo == null ? null : CreateOrganizationLogo.New(registerOrganizationDto.Logo),
-                    registerOrganizationDto.Images == null ? null : registerOrganizationDto.Images.Select(CreateImage.New))));
+                    registerOrganizationDto.Logo == null
+                        ? null
+                        : CreateOrganizationLogo.New(registerOrganizationDto.Logo),
+                    registerOrganizationDto.Images == null
+                        ? null
+                        : registerOrganizationDto.Images.Select(CreateImage.New)))));
+        }
     }
 }
