@@ -1,0 +1,38 @@
+version: "3.8"
+
+networks: 
+    organizations-api-net:
+        driver: bridge
+
+services:
+    organizations-api:
+        image: organizations-api:latest
+        depends_on: 
+            - "postgres-image"
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        ports: 
+            - "8003"
+        environment: 
+            DB_CONNECTION_STRING: "host=postgres-image;port=5432;database=organizations;username=organizationsapi;password=organizationsapi"
+        networks: 
+            - "organizations-api-net"
+    
+    postgres-image:
+        image: postgres:latest
+        ports:
+            - "5432"
+        restart: "always"
+        volumes: 
+            - db_volume:/var/lib/postgresql/data
+#            - ./Database/seed.sql :/docker-entrypoint-initdb.d/seed.sql
+        environment: 
+            POSTGRES_USER: "organizationsapi"
+            POSTGRES_PASSWORD: "organizationsapi"
+            POSTGRES_DB: "organizations"
+        networks:
+            - "organizations-api-net"
+volumes:
+    db_volume:
+    
