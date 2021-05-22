@@ -1,5 +1,6 @@
 using FluentValidation;
 using Organizations.Model.Operations;
+using SixLabors.ImageSharp;
 
 namespace Organizations.Model.Validators
 {
@@ -8,7 +9,7 @@ namespace Organizations.Model.Validators
         public CreateOrganizationLogoValidator()
         {
             RuleFor(x => x.Content)
-                .Must(image => SixLabors.ImageSharp.Image.Identify(image) != null)
+                .Must(image => Image.Identify(image) != null)
                 .WithMessage("Image format is invalid")
                 ;
         }

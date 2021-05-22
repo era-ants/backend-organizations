@@ -1,5 +1,8 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using Organizations.Model.Operations;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace Organizations.Model
 {
@@ -12,10 +15,15 @@ namespace Organizations.Model
         }
 
         public Guid Guid { get; }
-        
+
         public byte[] Image { get; }
 
-        public static OrganizationLogo New(CreateOrganizationLogo createLogo) => new(
-            Guid.NewGuid(), createLogo.Content);
+        public static async Task<OrganizationLogo> NewAsync(CreateOrganizationLogo createLogo)
+        {
+            await using var memoryStream = new MemoryStream();
+            await SixLabors.ImageSharp.Image.Load(createLogo.Content).SaveAsync(memoryStream, new PngEncoder());
+            return new OrganizationLogo(
+                Guid.NewGuid(), memoryStream.GetBuffer());
+        }
     }
 }

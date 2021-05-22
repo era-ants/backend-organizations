@@ -11,18 +11,11 @@ namespace Organizations.Services
 {
     public sealed class PostgresDbOrganizationsService : IOrganizationsService
     {
-        private readonly NpgsqlConnection _connection;
-
-        public PostgresDbOrganizationsService(NpgsqlConnection connection)
-        {
-            _connection = connection;
-        }
-
         private const string _getOrganizationsSql = @"
 SELECT 
        ""Guid"", 
-       (""TypeId"" / 100) AS ""OrganizationCategoryId"", 
-       ""TypeId"" AS ""OrganizationTypeId"", 
+       (""OrganizationTypeId"" / 100) AS ""OrganizationCategoryId"", 
+       ""OrganizationTypeId"", 
        ""LegalName"", 
        ""LegalAddress"", 
        ""TIN"",
@@ -41,17 +34,28 @@ SELECT ""Guid"",
        ""Instagram""
 FROM ""Contacts""";
 
+        private readonly NpgsqlConnection _connection;
+
+        public PostgresDbOrganizationsService(NpgsqlConnection connection)
+        {
+            _connection = connection;
+        }
+
         public async Task<IEnumerable<OrganizationFullDto>> GetAllAsync()
         {
             var organizations = await _connection.QueryAsync<OrganizationFullDto>(_getOrganizationsSql);
             var images = (await _connection.QueryAsync(
                     @"SELECT ""OrganizationGuid"", ""OrganizationImageGuid"" FROM ""JOrganizationImage"""))
-                .Select(x => new {OrganizationGuid = (Guid) x.OrganizationGuid, OrganizationImageGuid = (Guid) x.OrganizationImageGuid});
+                .Select(x => new
+                {
+                    OrganizationGuid = (Guid) x.OrganizationGuid, OrganizationImageGuid = (Guid) x.OrganizationImageGuid
+                });
             var contacts = await _connection.QueryAsync<ContactsFullDto>(_getContactsSql);
-            foreach (var contactsFullDto in contacts) 
+            foreach (var contactsFullDto in contacts)
                 organizations.First(x => x.ContactsGuid == contactsFullDto.Guid);
             foreach (var group in images.GroupBy(x => x.OrganizationGuid))
-                organizations.First(x => x.Guid == group.Key).ImagesGuids = new List<Guid>(group.Select(x => x.OrganizationImageGuid));
+                organizations.First(x => x.Guid == group.Key).ImagesGuids =
+                    new List<Guid>(group.Select(x => x.OrganizationImageGuid));
             return organizations;
         }
 
@@ -101,7 +105,35 @@ VALUES (@Guid, @OrganizationTypeId, @ContactsGuid, @LegalName, @LegalAddress, @A
                     new {organization.Guid, ImageGuid = image.Guid});
             }
 
+            await transaction.CommitAsync();
+            await _connection.CloseAsync();
+
             return organization.Guid;
+        }
+
+        public Task<bool> CheckIfImageGuidExists(Guid guid)
+        {
+            return _connection.QueryFirstAsync<bool>(@"SELECT EXISTS(SELECT 1 FROM ""OrganizationImage""
+    WHERE ""Guid"" = @Guid)", new {Guid = guid});
+        }
+
+        public Task<byte[]> GetImageAsync(Guid imageGuid)
+        {
+            return _connection.QueryFirstAsync<byte[]>(
+                @"SELECT ""Content"" FROM ""OrganizationImage"" WHERE ""Guid"" = @Guid",
+                new {Guid = imageGuid});
+        }
+
+        public Task<bool> CheckIfLogoGuidExists(Guid guid)
+        {
+            return _connection.QueryFirstAsync<bool>(@"SELECT EXISTS(
+SELECT 1 FROM ""OrganizationLogo"" WHERE ""Guid"" = @Guid)", new {Guid = guid});
+        }
+
+        public Task<byte[]> GetLogoAsync(Guid logoGuid)
+        {
+            return _connection.QueryFirstAsync<byte[]>(@"SELECT ""Content""
+FROM ""OrganizationLogo"" WHERE ""Guid"" = @Guid", new {Guid = logoGuid});
         }
     }
 }

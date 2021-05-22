@@ -17,26 +17,32 @@ namespace Organizations.Model.Validators
         {
             _doesOrganizationGuidExist = doesOrganizationGuidExist;
             _doesUserGuidExist = doesUserGuidExist;
-            
+
             ValidateScore();
             ValidateOrganizationGuid();
             ValidateUserGuid();
         }
 
-        private void ValidateScore() => RuleFor(x => x.Score)
-            .InclusiveBetween(1, 5)
-            .WithMessage("Score must be between 1 and 5")
-        ;
+        private void ValidateScore()
+        {
+            RuleFor(x => x.Score)
+                .InclusiveBetween(1, 5)
+                .WithMessage("Score must be between 1 and 5");
+        }
 
-        private void ValidateOrganizationGuid() => RuleFor(x => x.OrganizationGuid)
-            .MustAsync((guid, cancellationToken) => _doesOrganizationGuidExist.Invoke(guid, cancellationToken))
-            .WithMessage(createUserScore =>
-                $"Organization with Guid {createUserScore.OrganizationGuid} does not exist")
-        ;
+        private void ValidateOrganizationGuid()
+        {
+            RuleFor(x => x.OrganizationGuid)
+                .MustAsync((guid, cancellationToken) => _doesOrganizationGuidExist.Invoke(guid, cancellationToken))
+                .WithMessage(createUserScore =>
+                    $"Organization with Guid {createUserScore.OrganizationGuid} does not exist");
+        }
 
-        private void ValidateUserGuid() => RuleFor(x => x.UserGuid)
-            .MustAsync((guid, cancellationToken) => _doesUserGuidExist.Invoke(guid, cancellationToken))
-            .WithMessage(createUserScore => $"User with Guid {createUserScore.UserGuid} does not exist")
-        ;
+        private void ValidateUserGuid()
+        {
+            RuleFor(x => x.UserGuid)
+                .MustAsync((guid, cancellationToken) => _doesUserGuidExist.Invoke(guid, cancellationToken))
+                .WithMessage(createUserScore => $"User with Guid {createUserScore.UserGuid} does not exist");
+        }
     }
 }

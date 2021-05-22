@@ -5,6 +5,5 @@ namespace Organizations.Model.Validators
 {
     public sealed class CreateOrganizationValidator : AbstractValidator<CreateOrganization>
     {
-        
     }
 }

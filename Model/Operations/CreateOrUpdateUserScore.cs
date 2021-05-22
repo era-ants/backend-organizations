@@ -16,9 +16,9 @@ namespace Organizations.Model.Operations
         }
 
         public Guid OrganizationGuid { get; }
-        
+
         public Guid UserGuid { get; }
-        
+
         public int Score { get; }
 
         public static CreateOrUpdateUserScore NewAsync(

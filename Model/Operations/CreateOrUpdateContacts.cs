@@ -8,11 +8,11 @@ namespace Organizations.Model.Operations
         public CreateOrUpdateContacts(
             string actualAddress,
             string actualGeoPosition,
-            string? phoneNumber, 
-            string? email, 
-            string? site, 
+            string? phoneNumber,
+            string? email,
+            string? site,
             string? telegram,
-            string? instagram, 
+            string? instagram,
             string? vk)
         {
             ActualAddress = actualAddress;

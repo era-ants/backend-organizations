@@ -9,15 +9,15 @@ namespace Organizations.Model.Operations
     public sealed class CreateOrganization
     {
         private CreateOrganization(
-            Guid guid, 
-            OrganizationType type, 
-            CreateOrUpdateContacts contacts, 
-            string legalName, 
+            Guid guid,
+            OrganizationType type,
+            CreateOrUpdateContacts contacts,
+            string legalName,
             string legalAddress,
             string actualName,
             string tin,
-            CreateOrganizationLogo logo, 
-            IEnumerable<CreateImage> images)
+            CreateOrganizationLogo? logo,
+            IEnumerable<CreateImage>? images)
         {
             Guid = guid;
             Type = type;
@@ -27,27 +27,26 @@ namespace Organizations.Model.Operations
             ActualName = actualName;
             TIN = tin;
             Logo = logo;
-            Images = images.ToArray();
+            Images = images == null ? Array.Empty<CreateImage>() : images.ToArray();
         }
 
         public Guid Guid { get; }
-        
+
         public OrganizationType Type { get; }
-        
+
         public CreateOrUpdateContacts Contacts { get; }
-        
+
         public string LegalName { get; }
-        
+
         public string LegalAddress { get; }
-        
+
         public string ActualName { get; }
-        
+
         public string TIN { get; }
-        public CreateOrganizationLogo Logo { get; }
+        public CreateOrganizationLogo? Logo { get; }
         public IEnumerable<CreateImage> Images { get; }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="type"></param>
         /// <param name="contacts"></param>
@@ -64,11 +63,11 @@ namespace Organizations.Model.Operations
             string legalAddress,
             string actualName,
             string tin,
-            CreateOrganizationLogo logo,
+            CreateOrganizationLogo? logo,
             IEnumerable<CreateImage> images)
         {
             var createOrganization = new CreateOrganization(
-                Guid.NewGuid(), 
+                Guid.NewGuid(),
                 type,
                 contacts,
                 legalName,

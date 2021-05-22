@@ -27,40 +27,82 @@ namespace Organizations.Controllers
             _organizationsService = organizationsService;
         }
 
-
+        /// <summary>
+        ///     Возвращает все данные по всем организациям
+        /// </summary>
         [HttpGet]
-        public Task<IEnumerable<OrganizationFullDto>> GetOrganizations() => _organizationsService.GetAllAsync();
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public Task<IEnumerable<OrganizationFullDto>> GetOrganizations()
+        {
+            return _organizationsService.GetAllAsync();
+        }
 
+        /// <summary>
+        ///     Возвращает изображение организации
+        /// </summary>
+        /// <param name="imageGuid">Guid изображения</param>
+        [HttpGet("image/{imageGuid:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetImage(Guid imageGuid)
+        {
+            if (!await _organizationsService.CheckIfImageGuidExists(imageGuid))
+                return NotFound(imageGuid);
+            return File(await _organizationsService.GetImageAsync(imageGuid), "image/png");
+        }
+
+        /// <summary>
+        ///     Возвращает логотип организации
+        /// </summary>
+        /// <param name="imageGuid">Guid изображения</param>
+        [HttpGet("logo/{logoGuid:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetLogo(Guid logoGuid)
+        {
+            if (!await _organizationsService.CheckIfLogoGuidExists(logoGuid))
+                return NotFound(logoGuid);
+            return File(await _organizationsService.GetLogoAsync(logoGuid), "image/png");
+        }
+
+        /// <summary>
+        ///     Возвращает все данные по указанной организации
+        /// </summary>
         [HttpGet("{guid:guid}")]
-        public Task<OrganizationFullDto> GetOrganization(Guid guid) => _organizationsService.GetByGuidAsync(guid);
+        public Task<OrganizationFullDto> GetOrganization(Guid guid)
+        {
+            return _organizationsService.GetByGuidAsync(guid);
+        }
 
+        /// <summary>
+        ///     Регистрирует организацию в системе
+        /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Guid>> Register(RegisterOrganizationDto registerOrganizationDto)
         {
-            return Ok(await _organizationsService.RegisterOrganizationAsync(
-                Organization.New(CreateOrganization.New(
+            var logo = registerOrganizationDto.Logo;
+            var images = registerOrganizationDto.Images;
+            var contacts = registerOrganizationDto.Contacts;
+            return Created(string.Empty, await _organizationsService.RegisterOrganizationAsync(
+                await Organization.NewAsync(CreateOrganization.New(
                     OrganizationType.GetById(registerOrganizationDto.OrganizationTypeId),
                     new CreateOrUpdateContacts(
-                        registerOrganizationDto.Contacts.ActualAddress,
-                        registerOrganizationDto.Contacts.ActualGeoPosition,
-                        registerOrganizationDto.Contacts.PhoneNumber,
-                        registerOrganizationDto.Contacts.Email,
-                        registerOrganizationDto.Contacts.Site,
-                        registerOrganizationDto.Contacts.Telegram,
-                        registerOrganizationDto.Contacts.Instagram,
-                        registerOrganizationDto.Contacts.Vk),
+                        contacts.ActualAddress,
+                        contacts.ActualGeoPosition,
+                        contacts.PhoneNumber,
+                        contacts.Email,
+                        contacts.Site,
+                        contacts.Telegram,
+                        contacts.Instagram,
+                        contacts.Vk),
                     registerOrganizationDto.LegalName,
                     registerOrganizationDto.LegalAddress,
                     registerOrganizationDto.ActualName,
                     registerOrganizationDto.TIN,
-                    registerOrganizationDto.Logo == null
-                        ? null
-                        : CreateOrganizationLogo.New(registerOrganizationDto.Logo),
-                    registerOrganizationDto.Images == null
-                        ? null
-                        : registerOrganizationDto.Images.Select(CreateImage.New)))));
+                    logo == null ? null : CreateOrganizationLogo.New(logo),
+                    images == null ? Enumerable.Empty<CreateImage>() : images.Select(CreateImage.New)))));
         }
     }
 }

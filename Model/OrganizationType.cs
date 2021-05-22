@@ -16,7 +16,7 @@ namespace Organizations.Model
         public int Id { get; }
 
         public string Name { get; }
-        
+
         public OrganizationCategory Category { get; }
 
         public static OrganizationType Transport { get; } =
@@ -48,10 +48,16 @@ namespace Organizations.Model
         public static OrganizationType Administration { get; } =
             new(1, "Администрация", OrganizationCategory.Municipality);
 
-        public static IEnumerable<OrganizationType> GetAll() => typeof(OrganizationType).GetProperties(
-                BindingFlags.Public | BindingFlags.Static)
-            .Select(propertyInfo => (OrganizationType) propertyInfo.GetValue(null));
+        public static IEnumerable<OrganizationType> GetAll()
+        {
+            return typeof(OrganizationType).GetProperties(
+                    BindingFlags.Public | BindingFlags.Static)
+                .Select(propertyInfo => (OrganizationType) propertyInfo.GetValue(null));
+        }
 
-        public static OrganizationType GetById(int id) => GetAll().First(x => x.Id == id);
+        public static OrganizationType GetById(int id)
+        {
+            return GetAll().First(x => x.Id == id);
+        }
     }
 }
